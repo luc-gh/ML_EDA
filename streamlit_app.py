@@ -414,7 +414,7 @@ st.set_page_config(
 st.title("📊 EDA - Análise Exploratória de Dados")
 
 # Layout com colunas
-col1, col2 = st.columns([2, 1])
+col1, col2, col3 = st.columns([2, 1, 1])
 
 with col1:
     st.subheader("📥 Upload do Dataset")
@@ -429,14 +429,36 @@ with col2:
         • Codificação UTF-8
         """)
 
-if uploaded_file is not None:
+with col3:
+    st.subheader("📊 Dataset Padrão")
+    if st.button("📈 Usar Titanic Dataset", use_container_width=True):
+        st.session_state.use_default_dataset = True
+
+# Inicializar session state
+if "use_default_dataset" not in st.session_state:
+    st.session_state.use_default_dataset = False
+
+# Definir qual arquivo será usado
+if st.session_state.use_default_dataset:
+    uploaded_file = "titanic.csv"  # Usar o arquivo padrão
+    # Mostrar que o dataset padrão foi selecionado
+    st.info("📈 Usando Titanic Dataset padrão. Clique novamente no botão para recarregar.")
+elif uploaded_file is None:
+    st.session_state.use_default_dataset = False
+
+if uploaded_file is not None or st.session_state.use_default_dataset:
     progress_text = st.empty()
     progress_bar = st.progress(0, text="Aguardando início do processamento...")
 
     try:
         progress_text.info("📖 Lendo arquivo CSV...")
         progress_bar.progress(15, text="Lendo arquivo CSV")
-        df = pd.read_csv(uploaded_file)
+
+        # Carregar o arquivo (padrão ou importado)
+        if isinstance(uploaded_file, str):
+            df = pd.read_csv(uploaded_file)
+        else:
+            df = pd.read_csv(uploaded_file)
 
         if df.empty:
             raise ValueError("O arquivo CSV está vazio.")
