@@ -413,14 +413,28 @@ st.set_page_config(
 
 st.title("📊 EDA - Análise Exploratória de Dados")
 
-# Layout com colunas
-col1, col2, col3 = st.columns([2, 1, 1])
+# Inicializar session state para rastrear arquivo atual
+if "current_file_name" not in st.session_state:
+    st.session_state.current_file_name = None
+if "use_default_dataset" not in st.session_state:
+    st.session_state.use_default_dataset = False
+
+# Layout - Upload do Dataset
+st.subheader("📥 Upload do Dataset")
+uploaded_file = st.file_uploader("Selecione um arquivo CSV", type=["csv"])
+
+# Detectar se um novo arquivo foi selecionado (para limpar análise anterior)
+if uploaded_file is not None:
+    file_name = uploaded_file.name if hasattr(uploaded_file, 'name') else "uploaded"
+    if st.session_state.current_file_name != file_name:
+        st.session_state.current_file_name = file_name
+        st.session_state.use_default_dataset = False
+        st.rerun()
+
+# Abaixo: Formato CSV recomendado e Dataset Padrão
+col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader("📥 Upload do Dataset")
-    uploaded_file = st.file_uploader("Selecione um arquivo CSV", type=["csv"])
-
-with col2:
     with st.expander("💡 Formato CSV recomendado"):
         st.caption("""
         • Colunas separadas por vírgula (,)
@@ -429,20 +443,18 @@ with col2:
         • Codificação UTF-8
         """)
 
-with col3:
+with col2:
     st.subheader("📊 Dataset Padrão")
     if st.button("📈 Usar Titanic Dataset", use_container_width=True):
         st.session_state.use_default_dataset = True
-
-# Inicializar session state
-if "use_default_dataset" not in st.session_state:
-    st.session_state.use_default_dataset = False
+        st.session_state.current_file_name = "titanic.csv"
+        st.rerun()
 
 # Definir qual arquivo será usado
 if st.session_state.use_default_dataset:
     uploaded_file = "titanic.csv"  # Usar o arquivo padrão
     # Mostrar que o dataset padrão foi selecionado
-    st.info("📈 Usando Titanic Dataset padrão. Clique novamente no botão para recarregar.")
+    st.info("📈 Usando Titanic Dataset padrão. Clique em 'Importar novo arquivo' para usar outro dataset.")
 elif uploaded_file is None:
     st.session_state.use_default_dataset = False
 
